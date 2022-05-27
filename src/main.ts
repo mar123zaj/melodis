@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
+import MainScene from './scenes/MainScene'
 
-import HelloWorldScene from './scenes/HelloWorldScene'
 
 export default new Phaser.Game({
 	type: Phaser.AUTO,
@@ -12,5 +12,5 @@ export default new Phaser.Game({
 			gravity: { y: window.innerHeight }
 		}
 	},
-	scene: [HelloWorldScene]
+	scene: [MainScene]
 })
