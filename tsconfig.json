@@ -1,0 +1,24 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+      "skipLibCheck": true,
+      "resolveJsonModule": true,
+      "sourceMap": true,
+      "declaration": false,
+      "moduleResolution": "node",
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+  "allowSyntheticDefaultImports": true,
+      "target": "es2017",
+      "typeRoots": [
+          "node_modules/@types",
+    "node_module/phaser/types"
+      ],
+      "lib": [
+          "es2016",
+          "ESNext.BigInt",
+          "dom",
+          "es2017.object"
+      ]
+  }
+}
