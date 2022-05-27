@@ -8,7 +8,7 @@ export default class Melodis {
   private scene: Phaser.Scene;
 
   private speed = 300;
-  private jumpSpeed = 300;
+  private jumpSpeed = 320;
   private isPreparedToFight = false;
   private isAttacking = false;
   private intervalKeyPress = 250;
@@ -21,6 +21,8 @@ export default class Melodis {
   private maxJumpsNumber = 2;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
+    this.scene = scene;
+
     this.keys = scene.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.UP,
       down: Phaser.Input.Keyboard.KeyCodes.DOWN,
@@ -32,9 +34,10 @@ export default class Melodis {
     }) as Keys;
 
     this.sprite = scene.physics.add.sprite(x, y, ImageKey.MELODIS);
-    this.sprite.anims.play(AnimationKey.IDLE);
+    this.sprite.setSize(20, 30);
+    this.sprite.setOffset(14, 6);
 
-    this.scene = scene;
+    this.sprite.anims.play(AnimationKey.IDLE);
   }
 
   static loadAnims(scene: Phaser.Scene): void {
@@ -74,6 +77,13 @@ export default class Melodis {
     });
 
     scene.anims.create({
+      key: AnimationKey.EXTEND_JUMP,
+      frames: scene.anims.generateFrameNumbers(ImageKey.MELODIS, { start: 18, end: 23 }),
+      frameRate: 5,
+      repeat: -1,
+    });
+
+    scene.anims.create({
       key: AnimationKey.PULL_OUT_SWORD,
       frames: scene.anims.generateFrameNumbers(ImageKey.MELODIS, { start: 69, end: 73 }),
       frameRate: 8,
@@ -96,11 +106,15 @@ export default class Melodis {
   }
 
   stopMoving(): void {
-    this.stopMoving();
+    this.sprite.setVelocityX(0);
   }
 
   isFloatingInAir(): boolean {
     return !this.sprite.body.touching.down;
+  }
+
+  isTouchingGround(): boolean {
+    return this.sprite.body.touching.down;
   }
 
   update(time: number): void {
@@ -118,16 +132,18 @@ export default class Melodis {
 
     if (time < this.jumpUntil) {
       if (z && this.jumpsCounter < this.maxJumpsNumber) {
-        animationKey = AnimationKey.JUMP;
+        animationKey = AnimationKey.EXTEND_JUMP;
         this.sprite.setVelocityY(-this.jumpSpeed);
         this.jumpUntil = time + this.jumpDuration;
         this.sprite.play(animationKey, true);
         this.jumpsCounter += 1;
         return;
       }
+
+      return;
     }
 
-    if (!this.isFloatingInAir()) {
+    if (this.isTouchingGround()) {
       this.jumpsCounter = 0;
     }
 
@@ -150,7 +166,7 @@ export default class Melodis {
       return;
     }
 
-    if (up && !this.isFloatingInAir()) {
+    if (up && this.isTouchingGround()) {
       animationKey = AnimationKey.JUMP;
       this.sprite.setVelocityY(-this.jumpSpeed);
       this.jumpUntil = time + this.jumpDuration;
@@ -158,8 +174,6 @@ export default class Melodis {
     }
 
     if (q) {
-      if (this.isFloatingInAir()) return;
-
       this.isPreparedToFight = !this.isPreparedToFight;
 
       animationKey = this.isPreparedToFight ? AnimationKey.PUT_SWORD : AnimationKey.PULL_OUT_SWORD;
@@ -167,8 +181,6 @@ export default class Melodis {
     }
 
     if (space) {
-      if (isFloatingInAir) return;
-
       if (!this.isPreparedToFight) {
         animationKey = AnimationKey.PULL_OUT_SWORD;
         this.isPreparedToFight = true;
