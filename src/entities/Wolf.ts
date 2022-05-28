@@ -80,10 +80,14 @@ export class Wolf {
     return this.sprite.flipX;
   }
 
-  melodisIsNear(melodisCoordinates: Coordinates): boolean {
+  private melodisIsNear(melodisCoordinates: Coordinates): boolean {
     const { x, y } = this.sprite;
     const distance = Phaser.Math.Distance.Between(x, y, melodisCoordinates.x, melodisCoordinates.y);
     return this.nearDistance >= distance;
+  }
+
+  private isMelodisOnLeft(melodisXCoordinate: number): boolean {
+    return this.sprite.x > melodisXCoordinate;
   }
 
   private calculateEmojiCoordinates(): Coordinates {
@@ -112,6 +116,9 @@ export class Wolf {
         this.attentionEmoji = this.scene.add.image(x, y, ImageKey.ATTENTION);
       }
 
+      const flipX = this.isMelodisOnLeft(melodisCoordinates.x);
+
+      this.sprite.setFlipX(flipX);
       this.sprite.anims.play(WolfAnimationKey.ATTACK, true);
       this.sprite.setVelocity(0);
 
