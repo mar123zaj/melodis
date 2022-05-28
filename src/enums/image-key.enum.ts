@@ -3,6 +3,7 @@ enum ImageKey {
   GROUND = 'ground',
   PLATFORM = 'platform',
   MELODIS = 'melodis',
+  NOTE = 'note',
 }
 
 export default ImageKey;
