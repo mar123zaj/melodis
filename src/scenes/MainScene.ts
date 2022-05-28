@@ -115,8 +115,10 @@ export default class MainScene extends Phaser.Scene {
   }
 
   update(time: number): void {
+    const { x, y } = this.melodis.sprite;
     this.melodis.update(time);
 
-    //this.notes.forEach((note) => note.update(time));
+    this.notes.forEach((note) => note.update(time));
+    this.wolfs.forEach((wolf) => wolf.update(time, { x, y }));
   }
 }

@@ -37,6 +37,10 @@ export default class Melodis {
     }) as Keys;
 
     this.sprite = scene.physics.add.sprite(x, y, SpriteSheetKey.MELODIS);
+    scene.cameras.main.setRoundPixels(true);
+    scene.cameras.main.setZoom(1.5);
+    scene.cameras.main.startFollow(this.sprite);
+
     this.updateHitBox();
 
     this.sprite.anims.play(MelodisAnimationKey.IDLE);
@@ -74,7 +78,7 @@ export default class Melodis {
     scene.anims.create({
       key: MelodisAnimationKey.JUMP,
       frames: scene.anims.generateFrameNumbers(SpriteSheetKey.MELODIS, { start: 14, end: 17 }),
-      frameRate: 5,
+      frameRate: 8,
       repeat: -1,
     });
 
@@ -156,7 +160,6 @@ export default class Melodis {
   }
 
   update(time: number): void {
-    console.log({ isAttacking: this.isAttacking });
     let animationKey: MelodisAnimationKey;
 
     const up = this.keys.up.isDown,
@@ -176,6 +179,16 @@ export default class Melodis {
         this.jumpUntil = time + this.jumpDuration;
         this.sprite.play(animationKey, true);
         this.jumpsCounter += 1;
+
+        if (left) {
+          animationKey = MelodisAnimationKey.RUN;
+          this.sprite.setVelocityX(-this.speed);
+          this.sprite.setFlipX(true);
+        } else if (right) {
+          animationKey = MelodisAnimationKey.RUN;
+          this.sprite.setVelocityX(this.speed);
+          this.sprite.setFlipX(false);
+        }
         return;
       }
 
@@ -217,6 +230,7 @@ export default class Melodis {
 
       animationKey = this.isPreparedToFight ? MelodisAnimationKey.PUT_SWORD : MelodisAnimationKey.PULL_OUT_SWORD;
       this.keyPressLockedUntil = time + this.intervalKeyPress;
+      this.stopMoving();
     }
 
     if (space) {
@@ -228,14 +242,10 @@ export default class Melodis {
         this.attackUntil = time + this.attackDuration;
         this.updateHitBox();
         this.sprite.play(animationKey, true);
+        this.stopMoving();
         return;
       }
     }
-
-    if (q || space) {
-      this.stopMoving();
-    }
-
     this.updateHitBox();
     this.isAttacking = false;
     this.sprite.play(animationKey, true);

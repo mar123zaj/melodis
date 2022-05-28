@@ -3,6 +3,7 @@ enum ImageKey {
   GROUND = 'ground',
   PLATFORM = 'platform',
   NOTE = 'note',
+  ATTENTION = 'attention',
 }
 
 export default ImageKey;

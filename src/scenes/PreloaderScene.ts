@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import Attention from '../../public/assets/icons/emojis/attention.png';
 import BlackNote from '../../public/assets/icons/notes/black_note.png';
 import BlueNote from '../../public/assets/icons/notes/blue_note.png';
 import GreenNote from '../../public/assets/icons/notes/green_note.png';
@@ -6,10 +7,10 @@ import RedNote from '../../public/assets/icons/notes/red_note.png';
 import WhiteNote from '../../public/assets/icons/notes/white_note.png';
 import YellowNote from '../../public/assets/icons/notes/yellow_note.png';
 import Melodis from '../../public/assets/sprites/melodis.png';
-import WolfIdle from '../../public/assets/sprites/wolf/wolf_idle.png';
-import WolfRun from '../../public/assets/sprites/wolf/wolf_run.png';
 import WolfAttack from '../../public/assets/sprites/wolf/wolf_attack.png';
 import WolfDeath from '../../public/assets/sprites/wolf/wolf_death.png';
+import WolfIdle from '../../public/assets/sprites/wolf/wolf_idle.png';
+import WolfRun from '../../public/assets/sprites/wolf/wolf_run.png';
 import Ground from '../../public/assets/world/ground.png';
 import Platform from '../../public/assets/world/platform.png';
 import Sky from '../../public/assets/world/sky.png';
@@ -33,6 +34,7 @@ export default class PreloaderScene extends Phaser.Scene {
     this.load.image(`${Color.RED}_${ImageKey.NOTE}`, RedNote);
     this.load.image(`${Color.WHITE}_${ImageKey.NOTE}`, WhiteNote);
     this.load.image(`${Color.YELLOW}_${ImageKey.NOTE}`, YellowNote);
+    this.load.image(ImageKey.ATTENTION, Attention);
 
     this.load.spritesheet(SpriteSheetKey.MELODIS, Melodis, { frameWidth: 50, frameHeight: 37 });
     this.load.spritesheet(SpriteSheetKey.WOLF_IDLE, WolfIdle, { frameWidth: 64, frameHeight: 64 });

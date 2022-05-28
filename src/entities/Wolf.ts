@@ -1,10 +1,8 @@
+import ImageKey from '../enums/image-key.enum';
+import MoveDirection from '../enums/move-direction.enum';
 import SpriteSheetKey from '../enums/sprite-sheet-key.enum';
 import WolfAnimationKey from '../enums/wolf-animation-key.enum';
-
-enum MoveDirection {
-  UP = 'UP',
-  DOWN = 'DOWN',
-}
+import Coordinates from '../types/coordinates.type';
 
 export class Wolf {
   sprite: Phaser.Physics.Arcade.Sprite;
@@ -12,17 +10,21 @@ export class Wolf {
 
   private hp = 50;
   private scene: Phaser.Scene;
-  private nextActionInterval = 2000;
+  private nextActionInterval = 500;
   private nextAction = 0;
-  private currentMoveDirection = MoveDirection.DOWN;
-  private speed = 3;
+  private currentMoveDirection = MoveDirection.RIGHT;
+  private speed = 200;
+  private nearDistance = 64;
+  private attentionEmoji: Phaser.GameObjects.Image;
+  private width = 32;
+  private height = 26;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     this.scene = scene;
 
     this.sprite = scene.physics.add.sprite(x, y, SpriteSheetKey.WOLF_IDLE);
 
-    this.sprite.setSize(32, 26);
+    this.sprite.setSize(this.width, this.height);
 
     this.sprite.anims.play(WolfAnimationKey.IDLE, true);
   }
@@ -58,7 +60,6 @@ export class Wolf {
   }
 
   receiveDamage(damage: number): void {
-    console.log({ hp: this.hp });
     this.hp -= damage;
   }
 
@@ -67,23 +68,82 @@ export class Wolf {
   }
 
   die(): void {
+    if (this.attentionEmoji) {
+      this.removeAttentionEmoji();
+    }
+
     this.sprite.anims.play(WolfAnimationKey.DEATH, false);
     this.sprite.disableBody();
   }
 
-  update(time: number): void {
-    // if (time > this.nextAction) {
-    //   const previousMoveDirection = this.currentMoveDirection;
-    //   switch (previousMoveDirection) {
-    //     case MoveDirection.UP:
-    //       this.sprite.setVelocityY(this.speed);
-    //       break;
-    //     case MoveDirection.DOWN:
-    //       this.sprite.setVelocityY(-this.speed);
-    //       break;
-    //   }
-    //   this.currentMoveDirection = previousMoveDirection === MoveDirection.UP ? MoveDirection.DOWN : MoveDirection.UP;
-    //   this.nextAction = time + this.nextActionInterval;
-    // }
+  private isFacingLeft(): boolean {
+    return this.sprite.flipX;
+  }
+
+  melodisIsNear(melodisCoordinates: Coordinates): boolean {
+    const { x, y } = this.sprite;
+    const distance = Phaser.Math.Distance.Between(x, y, melodisCoordinates.x, melodisCoordinates.y);
+    return this.nearDistance >= distance;
+  }
+
+  private calculateEmojiCoordinates(): Coordinates {
+    const x = this.sprite.x + (this.isFacingLeft() ? -this.width / 2 : this.width / 2);
+    const y = this.sprite.y - this.height;
+
+    return { x, y };
+  }
+
+  private updateEmojiPosition(emoji: Phaser.GameObjects.Image): void {
+    const { x, y } = this.calculateEmojiCoordinates();
+    emoji.setPosition(x, y);
+  }
+
+  private removeAttentionEmoji(): void {
+    this.attentionEmoji.destroy();
+    this.attentionEmoji = null;
+  }
+
+  update(time: number, melodisCoordinates: Coordinates): void {
+    if (this.melodisIsNear(melodisCoordinates)) {
+      if (this.attentionEmoji) {
+        this.updateEmojiPosition(this.attentionEmoji);
+      } else {
+        const { x, y } = this.calculateEmojiCoordinates();
+        this.attentionEmoji = this.scene.add.image(x, y, ImageKey.ATTENTION);
+      }
+
+      this.sprite.anims.play(WolfAnimationKey.ATTACK, true);
+      this.sprite.setVelocity(0);
+
+      return;
+    } else {
+      if (this.attentionEmoji) {
+        this.removeAttentionEmoji();
+      }
+    }
+
+    if (time < this.nextAction) return;
+
+    if (Phaser.Math.Between(0, 1) === 0) {
+      this.sprite.anims.play(WolfAnimationKey.IDLE, true);
+      this.sprite.setVelocity(0);
+    } else {
+      this.sprite.anims.play(WolfAnimationKey.RUN, true);
+      const previousMoveDirection = this.currentMoveDirection;
+      switch (previousMoveDirection) {
+        case MoveDirection.LEFT:
+          this.sprite.setVelocityX(-this.speed);
+          this.sprite.setFlipX(true);
+          break;
+        case MoveDirection.RIGHT:
+          this.sprite.setVelocityX(this.speed);
+          this.sprite.setFlipX(false);
+          break;
+      }
+      this.currentMoveDirection =
+        previousMoveDirection === MoveDirection.LEFT ? MoveDirection.RIGHT : MoveDirection.LEFT;
+    }
+
+    this.nextAction = time + Phaser.Math.Between(500, 1500);
   }
 }
