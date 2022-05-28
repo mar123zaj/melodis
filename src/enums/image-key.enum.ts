@@ -2,7 +2,7 @@ enum ImageKey {
   SKY = 'sky',
   GROUND = 'ground',
   PLATFORM = 'platform',
-  NOTE = 'note',
+  ICON_TAPE = 'icon_tape',
   ATTENTION = 'attention',
   CARD = 'card',
 }

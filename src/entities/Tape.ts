@@ -2,7 +2,7 @@ import { Color } from '../enums/color.enum';
 import ImageKey from '../enums/image-key.enum';
 import MoveDirection from '../enums/move-direction.enum';
 
-export class Note {
+export class Tape {
   sprite: Phaser.Physics.Arcade.Sprite;
   private scene: Phaser.Scene;
   private nextActionInterval = 2000;
@@ -13,7 +13,7 @@ export class Note {
   constructor(scene: Phaser.Scene, x: number, y: number, color: Color) {
     this.scene = scene;
 
-    const spriteKey = `${color}_${ImageKey.NOTE}`;
+    const spriteKey = `${color}_${ImageKey.ICON_TAPE}`;
     this.sprite = scene.physics.add.sprite(x, y, spriteKey);
 
     this.sprite.body.bounce.y = 0.8;

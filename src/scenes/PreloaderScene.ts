@@ -1,12 +1,12 @@
 import Phaser from 'phaser';
 import FightSong from '../../public/assets/audio/fight_song.mp3';
 import Attention from '../../public/assets/icons/emojis/attention.png';
-import BlackNote from '../../public/assets/icons/notes/black_note.png';
-import BlueNote from '../../public/assets/icons/notes/blue_note.png';
-import GreenNote from '../../public/assets/icons/notes/green_note.png';
-import RedNote from '../../public/assets/icons/notes/red_note.png';
-import WhiteNote from '../../public/assets/icons/notes/white_note.png';
-import YellowNote from '../../public/assets/icons/notes/yellow_note.png';
+import BlackIconTape from '../../public/assets/icons/tapes/black_icon_tape.png';
+import BlueIconTape from '../../public/assets/icons/tapes/blue_icon_tape.png';
+import GreenIconTape from '../../public/assets/icons/tapes/green_icon_tape.png';
+import RedIconTape from '../../public/assets/icons/tapes/red_icon_tape.png';
+import WhiteIconTape from '../../public/assets/icons/tapes/white_icon_tape.png';
+import YellowIconTape from '../../public/assets/icons/tapes/yellow_icon_tape.png';
 import Melodis from '../../public/assets/sprites/melodis.png';
 import WolfAttack from '../../public/assets/sprites/wolf/wolf_attack.png';
 import WolfDeath from '../../public/assets/sprites/wolf/wolf_death.png';
@@ -30,12 +30,12 @@ export default class PreloaderScene extends Phaser.Scene {
     this.load.image(ImageKey.SKY, Sky);
     this.load.image(ImageKey.GROUND, Ground);
     this.load.image(ImageKey.PLATFORM, Platform);
-    this.load.image(`${Color.BLACK}_${ImageKey.NOTE}`, BlackNote);
-    this.load.image(`${Color.BLUE}_${ImageKey.NOTE}`, BlueNote);
-    this.load.image(`${Color.GREEN}_${ImageKey.NOTE}`, GreenNote);
-    this.load.image(`${Color.RED}_${ImageKey.NOTE}`, RedNote);
-    this.load.image(`${Color.WHITE}_${ImageKey.NOTE}`, WhiteNote);
-    this.load.image(`${Color.YELLOW}_${ImageKey.NOTE}`, YellowNote);
+    this.load.image(`${Color.BLACK}_${ImageKey.ICON_TAPE}`, BlackIconTape);
+    this.load.image(`${Color.BLUE}_${ImageKey.ICON_TAPE}`, BlueIconTape);
+    this.load.image(`${Color.GREEN}_${ImageKey.ICON_TAPE}`, GreenIconTape);
+    this.load.image(`${Color.RED}_${ImageKey.ICON_TAPE}`, RedIconTape);
+    this.load.image(`${Color.WHITE}_${ImageKey.ICON_TAPE}`, WhiteIconTape);
+    this.load.image(`${Color.YELLOW}_${ImageKey.ICON_TAPE}`, YellowIconTape);
     this.load.image(ImageKey.ATTENTION, Attention);
 
     this.load.spritesheet(SpriteSheetKey.MELODIS, Melodis, { frameWidth: 50, frameHeight: 37 });

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import Melodis from '../entities/Melodis';
-import { Note } from '../entities/Note';
+import { Tape } from '../entities/Tape';
 import { Wolf } from '../entities/Wolf';
 import { Color } from '../enums/color.enum';
 import ImageKey from '../enums/image-key.enum';
@@ -8,7 +8,7 @@ import ImageKey from '../enums/image-key.enum';
 export default class MainScene extends Phaser.Scene {
   private platforms: Phaser.Physics.Arcade.StaticGroup;
   private melodis: Melodis;
-  private notes: Note[];
+  private tapes: Tape[];
   private wolfs: Wolf[];
   private wolfsGroup: Phaser.GameObjects.Group;
   private attackLockedUntil = 0;
@@ -29,7 +29,7 @@ export default class MainScene extends Phaser.Scene {
     this.add.image(halfWidth, halfHeight, ImageKey.SKY).setDisplaySize(width, height);
 
     this.platforms = MainScene.addPlatforms(this, halfWidth, bottom);
-    this.notes = MainScene.addNotes(this);
+    this.tapes = MainScene.addTapes(this);
     this.wolfs = MainScene.addWolfs(this);
     this.wolfsGroup = this.physics.add.group(this.wolfs.map((wolf) => wolf.sprite));
 
@@ -37,9 +37,9 @@ export default class MainScene extends Phaser.Scene {
 
     this.physics.add.collider(this.platforms, this.melodis.sprite);
 
-    this.notes.forEach((note) => {
-      this.physics.add.collider(this.platforms, note.sprite);
-      this.physics.add.overlap(this.melodis.sprite, note.sprite, this.collectNote, null, 4);
+    this.tapes.forEach((tape) => {
+      this.physics.add.collider(this.platforms, tape.sprite);
+      this.physics.add.overlap(this.melodis.sprite, tape.sprite, this.collectTape, null, 4);
     });
 
     this.physics.add.collider(this.platforms, this.wolfsGroup);
@@ -70,8 +70,8 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
-  collectNote(_: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, note: Phaser.Physics.Arcade.Image): void {
-    note.disableBody(true, true);
+  collectTape(_: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, tape: Phaser.Physics.Arcade.Image): void {
+    tape.disableBody(true, true);
   }
 
   static addPlatforms(scene: Phaser.Scene, x: number, y: number): Phaser.Physics.Arcade.StaticGroup {
@@ -86,18 +86,18 @@ export default class MainScene extends Phaser.Scene {
     return platforms;
   }
 
-  static addNotes(scene: Phaser.Scene): Note[] {
-    const notes: Note[] = [];
+  static addTapes(scene: Phaser.Scene): Tape[] {
+    const tapes: Tape[] = [];
 
     [
       { x: 400, y: 550, color: Color.WHITE },
       { x: 50, y: 210, color: Color.BLUE },
       { x: 750, y: 190, color: Color.RED },
     ].forEach(({ x, y, color }) => {
-      notes.push(new Note(scene, x, y, color));
+      tapes.push(new Tape(scene, x, y, color));
     });
 
-    return notes;
+    return tapes;
   }
 
   static addWolfs(scene: Phaser.Scene): Wolf[] {
@@ -118,7 +118,7 @@ export default class MainScene extends Phaser.Scene {
     const { x, y } = this.melodis.sprite;
     this.melodis.update(time);
 
-    this.notes.forEach((note) => note.update(time));
+    this.tapes.forEach((tape) => tape.update(time));
     this.wolfs.forEach((wolf) => wolf.update(time, { x, y }));
   }
 }

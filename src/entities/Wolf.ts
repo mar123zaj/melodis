@@ -59,6 +59,7 @@ export class Wolf {
     });
   }
 
+  // TODO: Add graphic representation of damage deal
   receiveDamage(damage: number): void {
     this.hp -= damage;
   }
