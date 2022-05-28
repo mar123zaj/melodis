@@ -1,13 +1,15 @@
 import Phaser from 'phaser';
 import Melodis from '../entities/Melodis';
 import { Note } from '../entities/Note';
+import { Wolf } from '../entities/Wolf';
 import { Color } from '../enums/color.enum';
 import ImageKey from '../enums/image-key.enum';
 
 export default class MainScene extends Phaser.Scene {
   private platforms: Phaser.Physics.Arcade.StaticGroup;
-  private notes: Note[];
   private melodis: Melodis;
+  private notes: Note[];
+  private wolfs: Wolf[];
 
   constructor() {
     super('MainScene');
@@ -20,11 +22,13 @@ export default class MainScene extends Phaser.Scene {
     const bottom = height - 50;
 
     Melodis.loadAnims(this);
+    Wolf.loadAnims(this);
 
     this.add.image(halfWidth, halfHeight, ImageKey.SKY).setDisplaySize(width, height);
 
     this.platforms = MainScene.addPlatforms(this, halfWidth, bottom);
     this.notes = MainScene.addNotes(this);
+    this.wolfs = MainScene.addWolfs(this);
 
     this.melodis = new Melodis(this, halfWidth, halfHeight);
 
@@ -33,6 +37,10 @@ export default class MainScene extends Phaser.Scene {
     this.notes.forEach((note) => {
       this.physics.add.collider(this.platforms, note.sprite);
       this.physics.add.overlap(this.melodis.sprite, note.sprite, this.collectNote, null, 4);
+    });
+
+    this.wolfs.forEach((wolf) => {
+      this.physics.add.collider(this.platforms, wolf.sprite);
     });
   }
 
@@ -64,6 +72,20 @@ export default class MainScene extends Phaser.Scene {
     });
 
     return notes;
+  }
+
+  static addWolfs(scene: Phaser.Scene): Wolf[] {
+    const wolfs: Wolf[] = [];
+
+    [
+      { x: 430, y: 550 },
+      { x: 80, y: 210 },
+      { x: 780, y: 190 },
+    ].forEach(({ x, y }) => {
+      wolfs.push(new Wolf(scene, x, y));
+    });
+
+    return wolfs;
   }
 
   update(time: number): void {

@@ -10,7 +10,7 @@ export default new Phaser.Game({
     default: 'arcade',
     arcade: {
       gravity: { y: window.innerHeight },
-      //   debug: true,
+      debug: true,
     },
   },
   scene: [PreloaderScene, MainScene],

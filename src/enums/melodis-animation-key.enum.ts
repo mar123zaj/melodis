@@ -1,4 +1,4 @@
-enum AnimationKey {
+enum MelodisAnimationKey {
   IDLE = 'idle',
   IDLE_WITH_SWORD = 'idle with sword',
   BEND_DOWN = 'bend down',
@@ -10,4 +10,4 @@ enum AnimationKey {
   ATTACK_WITH_SWORD = 'attack with sword',
 }
 
-export default AnimationKey;
+export default MelodisAnimationKey;
