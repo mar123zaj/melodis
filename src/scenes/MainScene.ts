@@ -10,6 +10,8 @@ export default class MainScene extends Phaser.Scene {
   private melodis: Melodis;
   private notes: Note[];
   private wolfs: Wolf[];
+  private wolfsGroup: Phaser.GameObjects.Group;
+  private attackLockedUntil = 0;
 
   constructor() {
     super('MainScene');
@@ -29,6 +31,7 @@ export default class MainScene extends Phaser.Scene {
     this.platforms = MainScene.addPlatforms(this, halfWidth, bottom);
     this.notes = MainScene.addNotes(this);
     this.wolfs = MainScene.addWolfs(this);
+    this.wolfsGroup = this.physics.add.group(this.wolfs.map((wolf) => wolf.sprite));
 
     this.melodis = new Melodis(this, halfWidth, halfHeight);
 
@@ -39,9 +42,32 @@ export default class MainScene extends Phaser.Scene {
       this.physics.add.overlap(this.melodis.sprite, note.sprite, this.collectNote, null, 4);
     });
 
-    this.wolfs.forEach((wolf) => {
-      this.physics.add.collider(this.platforms, wolf.sprite);
-    });
+    this.physics.add.collider(this.platforms, this.wolfsGroup);
+    this.physics.add.overlap(this.melodis.sprite, this.wolfsGroup, this.melodisWolfCollide, undefined, this);
+  }
+
+  melodisWolfCollide(_: Phaser.GameObjects.GameObject, wolfSprite: Phaser.GameObjects.GameObject): void {
+    if (this.time.now < this.attackLockedUntil) return;
+
+    const wolf = this.wolfs.find((w) => w.sprite === wolfSprite);
+
+    if (!wolf) {
+      console.log('Missing wolf sprite to collide.');
+      return;
+    }
+
+    if (this.melodis.isAttacking) {
+      this.attackLockedUntil = this.time.now + this.melodis.attackDuration;
+
+      wolf.receiveDamage(this.melodis.attackPower);
+
+      if (wolf.shouldDie()) {
+        this.wolfs = this.wolfs.filter((w) => w != wolf);
+        wolf.die();
+      }
+    } else {
+      this.melodis.receiveDamage(wolf.attackPower);
+    }
   }
 
   collectNote(_: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, note: Phaser.Physics.Arcade.Image): void {
@@ -91,6 +117,6 @@ export default class MainScene extends Phaser.Scene {
   update(time: number): void {
     this.melodis.update(time);
 
-    this.notes.forEach((note) => note.update(time));
+    //this.notes.forEach((note) => note.update(time));
   }
 }

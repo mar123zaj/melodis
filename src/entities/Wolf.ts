@@ -1,4 +1,3 @@
-import { Color } from '../enums/color.enum';
 import SpriteSheetKey from '../enums/sprite-sheet-key.enum';
 import WolfAnimationKey from '../enums/wolf-animation-key.enum';
 
@@ -9,6 +8,9 @@ enum MoveDirection {
 
 export class Wolf {
   sprite: Phaser.Physics.Arcade.Sprite;
+  attackPower = 5;
+
+  private hp = 50;
   private scene: Phaser.Scene;
   private nextActionInterval = 2000;
   private nextAction = 0;
@@ -51,8 +53,22 @@ export class Wolf {
       key: WolfAnimationKey.DEATH,
       frames: scene.anims.generateFrameNumbers(SpriteSheetKey.WOLF_DEATH, { start: 0, end: 17 }),
       frameRate: 8,
-      repeat: -1,
+      hideOnComplete: true,
     });
+  }
+
+  receiveDamage(damage: number): void {
+    console.log({ hp: this.hp });
+    this.hp -= damage;
+  }
+
+  shouldDie(): boolean {
+    return this.hp <= 0;
+  }
+
+  die(): void {
+    this.sprite.anims.play(WolfAnimationKey.DEATH, false);
+    this.sprite.disableBody();
   }
 
   update(time: number): void {

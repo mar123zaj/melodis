@@ -4,17 +4,20 @@ import Keys from '../types/melodis-keys.type';
 
 export default class Melodis {
   sprite: Phaser.Physics.Arcade.Sprite;
+  isAttacking = false;
+  attackPower = 15;
+  attackDuration = 700;
+
   private keys: Keys;
   private scene: Phaser.Scene;
 
+  private hp = 100;
   private speed = 300;
   private jumpSpeed = 320;
   private isPreparedToFight = false;
-  private isAttacking = false;
   private intervalKeyPress = 250;
   private keyPressLockedUntil = 0;
   private attackUntil = 0;
-  private attackDuration = 700;
   private jumpUntil = 0;
   private jumpDuration = 700;
   private jumpsCounter = 0;
@@ -34,8 +37,7 @@ export default class Melodis {
     }) as Keys;
 
     this.sprite = scene.physics.add.sprite(x, y, SpriteSheetKey.MELODIS);
-    this.sprite.setSize(20, 30);
-    this.sprite.setOffset(14, 6);
+    this.updateHitBox();
 
     this.sprite.anims.play(MelodisAnimationKey.IDLE);
   }
@@ -105,19 +107,56 @@ export default class Melodis {
     });
   }
 
-  stopMoving(): void {
+  private stopMoving(): void {
     this.sprite.setVelocityX(0);
   }
 
-  isFloatingInAir(): boolean {
+  private isFloatingInAir(): boolean {
     return !this.sprite.body.touching.down;
   }
 
-  isTouchingGround(): boolean {
+  private isTouchingGround(): boolean {
     return this.sprite.body.touching.down;
   }
 
+  private isFacingLeft(): boolean {
+    return this.sprite.flipX;
+  }
+
+  private updateHitBox(): void {
+    if (this.isAttacking) {
+      if (this.isFacingLeft()) {
+        this.updateSizeAndOffset({ size: { width: 34, height: 36 }, offset: { x: 0, y: 0 } });
+      } else {
+        this.updateSizeAndOffset({ size: { width: 36, height: 36 }, offset: { x: 16, y: 0 } });
+      }
+    } else {
+      this.updateSizeAndOffset({ size: { width: 20, height: 30 }, offset: { x: 14, y: 6 } });
+    }
+  }
+
+  private updateSizeAndOffset({
+    size,
+    offset,
+  }: {
+    size: { width: number; height: number };
+    offset: { x: number; y: number };
+  }): void {
+    const { width, height } = size;
+    const { x, y } = offset;
+
+    this.sprite.setSize(width, height);
+    this.sprite.setOffset(x, y);
+  }
+
+  receiveDamage(damage: number): void {
+    this.hp -= damage;
+    this.scene.cameras.main.shake(150, 0.001);
+    this.scene.cameras.main.flash(50, 100, 0, 0);
+  }
+
   update(time: number): void {
+    console.log({ isAttacking: this.isAttacking });
     let animationKey: MelodisAnimationKey;
 
     const up = this.keys.up.isDown,
@@ -182,12 +221,14 @@ export default class Melodis {
 
     if (space) {
       if (!this.isPreparedToFight) {
-        animationKey = MelodisAnimationKey.PULL_OUT_SWORD;
-        this.isPreparedToFight = true;
+        return;
       } else {
         animationKey = MelodisAnimationKey.ATTACK_WITH_SWORD;
         this.isAttacking = true;
         this.attackUntil = time + this.attackDuration;
+        this.updateHitBox();
+        this.sprite.play(animationKey, true);
+        return;
       }
     }
 
@@ -195,6 +236,8 @@ export default class Melodis {
       this.stopMoving();
     }
 
+    this.updateHitBox();
+    this.isAttacking = false;
     this.sprite.play(animationKey, true);
   }
 }
