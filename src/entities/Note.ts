@@ -2,7 +2,6 @@ import { Color } from '../enums/color.enum';
 import ImageKey from '../enums/image-key.enum';
 import MoveDirection from '../enums/move-direction.enum';
 
-
 export class Note {
   sprite: Phaser.Physics.Arcade.Sprite;
   private scene: Phaser.Scene;

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import FightSong from '../../public/assets/audio/fight_song.mp3';
 import Attention from '../../public/assets/icons/emojis/attention.png';
 import BlackNote from '../../public/assets/icons/notes/black_note.png';
 import BlueNote from '../../public/assets/icons/notes/blue_note.png';
@@ -14,6 +15,7 @@ import WolfRun from '../../public/assets/sprites/wolf/wolf_run.png';
 import Ground from '../../public/assets/world/ground.png';
 import Platform from '../../public/assets/world/platform.png';
 import Sky from '../../public/assets/world/sky.png';
+import AudioKey from '../enums/audio-key.enum';
 import { Color } from '../enums/color.enum';
 import ImageKey from '../enums/image-key.enum';
 import SpriteSheetKey from '../enums/sprite-sheet-key.enum';
@@ -41,6 +43,8 @@ export default class PreloaderScene extends Phaser.Scene {
     this.load.spritesheet(SpriteSheetKey.WOLF_RUN, WolfRun, { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet(SpriteSheetKey.WOLF_ATTACK, WolfAttack, { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet(SpriteSheetKey.WOLF_DEATH, WolfDeath, { frameWidth: 64, frameHeight: 64 });
+
+    this.load.audio(AudioKey.FIGHT_SONG, FightSong);
   }
 
   create(): void {
