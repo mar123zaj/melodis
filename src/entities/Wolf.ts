@@ -108,6 +108,10 @@ export class Wolf {
     this.attentionEmoji = null;
   }
 
+  private isTouchingGround(): boolean {
+    return this.sprite.body.touching.down;
+  }
+
   update(time: number, melodisCoordinates: Coordinates): void {
     if (this.melodisIsNear(melodisCoordinates)) {
       if (this.attentionEmoji) {
@@ -121,7 +125,9 @@ export class Wolf {
 
       this.sprite.setFlipX(flipX);
       this.sprite.anims.play(WolfAnimationKey.ATTACK, true);
-      this.sprite.setVelocity(0);
+      if (this.isTouchingGround()) {
+        this.sprite.setVelocity(0);
+      }
 
       return;
     } else {

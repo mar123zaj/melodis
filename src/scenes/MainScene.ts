@@ -86,22 +86,19 @@ export default class MainScene extends Phaser.Scene {
 
     switch (tapeColor) {
       case TapeColor.red:
-        audioKey = AudioKey.MOCK_SONG;
+        audioKey = AudioKey.BERSERKER_SONG;
         break;
       case TapeColor.green:
-        audioKey = AudioKey.MOCK_SONG;
+        audioKey = AudioKey.MEDITATION_SONG;
         break;
       case TapeColor.white:
-        audioKey = AudioKey.MOCK_SONG;
+        audioKey = AudioKey.ANGEL_SONG;
         break;
       case TapeColor.blue:
-        audioKey = AudioKey.MOCK_SONG;
-        break;
-      case TapeColor.yellow:
-        audioKey = AudioKey.MOCK_SONG;
+        audioKey = AudioKey.FOCUSED_SONG;
         break;
       case TapeColor.black:
-        audioKey = AudioKey.MOCK_SONG;
+        audioKey = AudioKey.DARK_SONG;
         break;
     }
 

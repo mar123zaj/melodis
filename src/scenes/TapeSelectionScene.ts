@@ -7,20 +7,13 @@ import TapeSelectionKeys from '../types/tape-selection-keys.type';
 export default class TapeSelectionScene extends Phaser.Scene {
   isActive = false;
 
-  private tapesColorsCollected = [
-    TapeColor.yellow,
-    TapeColor.blue,
-    TapeColor.red,
-    TapeColor.green,
-    TapeColor.white,
-    TapeColor.black,
-  ];
+  private tapesColorsCollected = [TapeColor.blue, TapeColor.red, TapeColor.green, TapeColor.white, TapeColor.black];
   private keys: TapeSelectionKeys;
   private container: Phaser.GameObjects.Container;
-  private intervalKeyPress = 650;
+  private intervalKeyPress = 300;
   private keyPressLockedUntil = 0;
   private tapesContainers: Phaser.GameObjects.Container[];
-  private selectedTapeContainerIndex = 5;
+  private selectedTapeContainerIndex = 4;
 
   constructor() {
     super('TapeSelectionScene');

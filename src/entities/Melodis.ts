@@ -8,19 +8,25 @@ export default class Melodis {
   isAttacking = false;
   isMeditating = false;
   isBerserker = false;
+  isDark = false;
+  isAngel = false;
+  isFocused = false;
   attackPower = 15;
   attackDuration = 700;
+  castSpellDuration = 1500;
 
   private keys: MelodisKeys;
   private scene: Phaser.Scene;
 
+  private defaultAttackDuration = 700;
   private defaultAttackPower = 15;
   private hp = 100;
   private defaultSpeed = 300;
   private speed = 300;
   private jumpSpeed = 320;
+  private flySpeed = 100;
   private defaultJumpSpeed = 320;
-  private isPreparedToFight = false;
+  private isHoldingSword = false;
   private intervalKeyPress = 650;
   private keyPressLockedUntil = 0;
   private attackUntil = 0;
@@ -28,6 +34,7 @@ export default class Melodis {
   private jumpDuration = 700;
   private jumpsCounter = 0;
   private maxJumpsNumber = 2;
+  private isSpellingCast = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     this.scene = scene;
@@ -82,6 +89,13 @@ export default class Melodis {
     });
 
     scene.anims.create({
+      key: MelodisAnimationKey.FLY,
+      frames: scene.anims.generateFrameNumbers(SpriteSheetKey.MELODIS, { start: 79, end: 80 }),
+      frameRate: 5,
+      repeat: -1,
+    });
+
+    scene.anims.create({
       key: MelodisAnimationKey.JUMP,
       frames: scene.anims.generateFrameNumbers(SpriteSheetKey.MELODIS, { start: 14, end: 17 }),
       frameRate: 8,
@@ -113,19 +127,82 @@ export default class Melodis {
     });
 
     scene.anims.create({
+      key: MelodisAnimationKey.FOCUSED_ATTACK_WITH_SWORD,
+      frames: scene.anims.generateFrameNumbers(SpriteSheetKey.MELODIS, { start: 47, end: 58 }),
+      frameRate: 8,
+      repeat: -1,
+    });
+
+    scene.anims.create({
+      key: MelodisAnimationKey.BERSERKER_ATTACK_WITH_SWORD,
+      frames: scene.anims.generateFrameNumbers(SpriteSheetKey.MELODIS, { start: 96, end: 108 }),
+      frameRate: 8,
+      repeat: -1,
+    });
+
+    scene.anims.create({
       key: MelodisAnimationKey.MEDITATION,
       frames: scene.anims.generateFrameNumbers(SpriteSheetKey.MELODIS_MEDITATION, { start: 0, end: 3 }),
       frameRate: 3,
       repeat: -1,
     });
+
+    scene.anims.create({
+      key: MelodisAnimationKey.DARK_IDLE,
+      frames: scene.anims.generateFrameNumbers(SpriteSheetKey.DARK_MELODIS, { start: 0, end: 3 }),
+      frameRate: 5,
+      repeat: -1,
+    });
+
+    scene.anims.create({
+      key: MelodisAnimationKey.DARK_IDLE_WITH_SWORD,
+      frames: scene.anims.generateFrameNumbers(SpriteSheetKey.DARK_MELODIS, { start: 38, end: 41 }),
+      frameRate: 5,
+      repeat: -1,
+    });
+
+    scene.anims.create({
+      key: MelodisAnimationKey.DARK_ATTACK_WITH_SWORD,
+      frames: scene.anims.generateFrameNumbers(SpriteSheetKey.DARK_MELODIS, { start: 42, end: 46 }),
+      frameRate: 8,
+      repeat: -1,
+    });
+
+    scene.anims.create({
+      key: MelodisAnimationKey.DARK_ATTACK_WITHOUT_SWORD,
+      frames: scene.anims.generateFrameNumbers(SpriteSheetKey.DARK_MELODIS, { start: 85, end: 92 }),
+      frameRate: 8,
+    });
+
+    scene.anims.create({
+      key: MelodisAnimationKey.DARK_BEND_DOWN,
+      frames: scene.anims.generateFrameNumbers(SpriteSheetKey.DARK_MELODIS, { start: 4, end: 7 }),
+      frameRate: 5,
+      repeat: -1,
+    });
+
+    scene.anims.create({
+      key: MelodisAnimationKey.DARK_RUN,
+      frames: scene.anims.generateFrameNumbers(SpriteSheetKey.DARK_MELODIS, { start: 8, end: 13 }),
+      frameRate: 5,
+      repeat: -1,
+    });
+
+    scene.anims.create({
+      key: MelodisAnimationKey.DARK_JUMP,
+      frames: scene.anims.generateFrameNumbers(SpriteSheetKey.DARK_MELODIS, { start: 14, end: 17 }),
+      frameRate: 8,
+    });
+
+    scene.anims.create({
+      key: MelodisAnimationKey.DARK_EXTEND_JUMP,
+      frames: scene.anims.generateFrameNumbers(SpriteSheetKey.DARK_MELODIS, { start: 18, end: 23 }),
+      frameRate: 5,
+    });
   }
 
   private stopMoving(): void {
     this.sprite.setVelocityX(0);
-  }
-
-  private isFloatingInAir(): boolean {
-    return !this.sprite.body.touching.down;
   }
 
   private isTouchingGround(): boolean {
@@ -138,10 +215,14 @@ export default class Melodis {
 
   private updateHitBox(): void {
     if (this.isAttacking) {
-      if (this.isFacingLeft()) {
-        this.updateSizeAndOffset({ size: { width: 34, height: 36 }, offset: { x: 0, y: 0 } });
+      if (this.isSpellingCast) {
+        this.isFacingLeft()
+          ? this.updateSizeAndOffset({ size: { width: 40, height: 36 }, offset: { x: 0, y: 0 } })
+          : this.updateSizeAndOffset({ size: { width: 42, height: 36 }, offset: { x: 16, y: 0 } });
       } else {
-        this.updateSizeAndOffset({ size: { width: 36, height: 36 }, offset: { x: 16, y: 0 } });
+        this.isFacingLeft()
+          ? this.updateSizeAndOffset({ size: { width: 34, height: 36 }, offset: { x: 0, y: 0 } })
+          : this.updateSizeAndOffset({ size: { width: 36, height: 36 }, offset: { x: 16, y: 0 } });
       }
     } else {
       this.updateSizeAndOffset({ size: { width: 20, height: 30 }, offset: { x: 14, y: 6 } });
@@ -175,19 +256,34 @@ export default class Melodis {
       this.scene.cameras.main.setZoom(3);
       this.scene.cameras.main.shake(150, 0.001);
       this.speed *= 2;
-      this.attackPower *= 2;
-      if (!this.isPreparedToFight) {
+      this.attackPower *= 1.5;
+      this.attackDuration = 1500;
+      if (!this.isHoldingSword) {
         this.sprite.anims.play(MelodisAnimationKey.PULL_OUT_SWORD);
-        this.isPreparedToFight = true;
+        this.isHoldingSword = true;
       }
 
       this.isBerserker = true;
       return;
-      // } else if (color === Color.WHITE) {
-    } else if (tapeColor === TapeColor.green) {
-      this.isMeditating = true;
-      this.sprite.anims.play(MelodisAnimationKey.MEDITATION, true);
+    } else if (tapeColor === TapeColor.white) {
+      this.isAngel = true;
+      return;
+    } else if (tapeColor === TapeColor.blue) {
+      this.attackPower *= 3;
+      this.attackDuration = 1500;
 
+      this.isFocused = true;
+      return;
+    } else if (tapeColor === TapeColor.black) {
+      this.attackPower *= 2;
+      this.attackDuration = 1500;
+
+      this.isDark = true;
+      return;
+    } else if (tapeColor === TapeColor.green) {
+      this.sprite.anims.play(MelodisAnimationKey.MEDITATION, true);
+      this.sprite.setAlpha(0.5);
+      this.isMeditating = true;
       return;
     }
   }
@@ -196,9 +292,14 @@ export default class Melodis {
     this.scene.cameras.main.setZoom(1.5);
     this.isBerserker = false;
     this.isMeditating = false;
+    this.isDark = false;
+    this.isAngel = false;
+    this.isFocused = false;
+    this.sprite.setAlpha(1);
     this.speed = this.defaultSpeed;
     this.jumpSpeed = this.defaultJumpSpeed;
     this.attackPower = this.defaultAttackPower;
+    this.attackDuration = this.defaultAttackDuration;
   }
 
   update(time: number): void {
@@ -212,6 +313,23 @@ export default class Melodis {
       q = this.keys.q.isDown,
       z = this.keys.z.isDown;
 
+    if (this.isAngel && !this.isTouchingGround()) {
+      this.sprite.play(MelodisAnimationKey.FLY, true);
+      if (up) {
+        this.sprite.setVelocityY(-this.flySpeed);
+      }
+
+      if (left) {
+        this.sprite.setVelocityX(-this.flySpeed);
+        this.sprite.setFlipX(true);
+      } else if (right) {
+        this.sprite.setVelocityX(this.flySpeed);
+        this.sprite.setFlipX(false);
+      }
+
+      return;
+    }
+
     if (this.isMeditating) return;
 
     if (this.isBerserker) {
@@ -222,18 +340,18 @@ export default class Melodis {
 
     if (time < this.jumpUntil) {
       if (z && this.jumpsCounter < this.maxJumpsNumber) {
-        animationKey = MelodisAnimationKey.EXTEND_JUMP;
+        animationKey = this.isDark ? MelodisAnimationKey.DARK_EXTEND_JUMP : MelodisAnimationKey.EXTEND_JUMP;
         this.sprite.setVelocityY(-this.jumpSpeed);
         this.jumpUntil = time + this.jumpDuration;
         this.sprite.play(animationKey, true);
         this.jumpsCounter += 1;
 
         if (left) {
-          animationKey = MelodisAnimationKey.RUN;
+          animationKey = this.isDark ? MelodisAnimationKey.DARK_RUN : MelodisAnimationKey.RUN;
           this.sprite.setVelocityX(-this.speed);
           this.sprite.setFlipX(true);
         } else if (right) {
-          animationKey = MelodisAnimationKey.RUN;
+          animationKey = this.isDark ? MelodisAnimationKey.DARK_RUN : MelodisAnimationKey.RUN;
           this.sprite.setVelocityX(this.speed);
           this.sprite.setFlipX(false);
         }
@@ -256,12 +374,17 @@ export default class Melodis {
       this.sprite.setVelocityX(this.speed);
       this.sprite.setFlipX(false);
     } else {
-      animationKey = this.isPreparedToFight ? MelodisAnimationKey.IDLE_WITH_SWORD : MelodisAnimationKey.IDLE;
+      if (this.isDark) {
+        animationKey = this.isHoldingSword ? MelodisAnimationKey.DARK_IDLE_WITH_SWORD : MelodisAnimationKey.DARK_IDLE;
+      } else {
+        animationKey = this.isHoldingSword ? MelodisAnimationKey.IDLE_WITH_SWORD : MelodisAnimationKey.IDLE;
+      }
       this.stopMoving();
     }
 
-    if (down && this.sprite.body.touching.down) {
-      this.sprite.play(MelodisAnimationKey.BEND_DOWN, true);
+    if (down && this.isTouchingGround()) {
+      animationKey = this.isDark ? MelodisAnimationKey.DARK_BEND_DOWN : MelodisAnimationKey.BEND_DOWN;
+      this.sprite.play(animationKey, true);
       this.stopMoving();
       return;
     }
@@ -273,19 +396,38 @@ export default class Melodis {
       this.jumpsCounter += 1;
     }
 
-    if (q) {
-      animationKey = this.isPreparedToFight ? MelodisAnimationKey.PUT_SWORD : MelodisAnimationKey.PULL_OUT_SWORD;
+    if (q && !this.isBerserker) {
+      animationKey = this.isHoldingSword ? MelodisAnimationKey.PUT_SWORD : MelodisAnimationKey.PULL_OUT_SWORD;
 
-      this.isPreparedToFight = !this.isPreparedToFight;
+      this.isHoldingSword = !this.isHoldingSword;
       this.keyPressLockedUntil = time + this.intervalKeyPress;
       this.stopMoving();
     }
 
     if (space) {
-      if (!this.isPreparedToFight) {
-        return;
+      if (!this.isHoldingSword) {
+        if (this.isDark) {
+          animationKey = MelodisAnimationKey.DARK_ATTACK_WITHOUT_SWORD;
+          this.isAttacking = true;
+          this.isSpellingCast = true;
+          this.attackUntil = time + this.castSpellDuration;
+          this.updateHitBox();
+          this.sprite.play(animationKey, true);
+          this.stopMoving();
+          return;
+        } else {
+          return;
+        }
       } else {
-        animationKey = MelodisAnimationKey.ATTACK_WITH_SWORD;
+        if (this.isBerserker) {
+          animationKey = MelodisAnimationKey.BERSERKER_ATTACK_WITH_SWORD;
+        } else if (this.isDark) {
+          animationKey = MelodisAnimationKey.DARK_ATTACK_WITH_SWORD;
+        } else if (this.isFocused) {
+          animationKey = MelodisAnimationKey.FOCUSED_ATTACK_WITH_SWORD;
+        } else {
+          animationKey = MelodisAnimationKey.ATTACK_WITH_SWORD;
+        }
         this.isAttacking = true;
         this.attackUntil = time + this.attackDuration;
         this.updateHitBox();
@@ -295,15 +437,9 @@ export default class Melodis {
       }
     }
 
-    // if (i) {
-    //   this.scene.sound.pauseAll();
-    //   this.playTape(Color.green);
-    //   this.keyPressLockedUntil = time + this.intervalKeyPress;
-    //   return;
-    // }
-
     this.updateHitBox();
     this.isAttacking = false;
+    this.isSpellingCast = false;
     this.sprite.play(animationKey, true);
   }
 }
