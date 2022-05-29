@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import Melodis from '../entities/Melodis';
 import { Tape } from '../entities/Tape';
 import { Wolf } from '../entities/Wolf';
+import AudioKey from '../enums/audio-key.enum';
 import { Color } from '../enums/color.enum';
 import ImageKey from '../enums/image-key.enum';
 
@@ -27,6 +28,9 @@ export default class MainScene extends Phaser.Scene {
     Wolf.loadAnims(this);
 
     this.add.image(halfWidth, halfHeight, ImageKey.SKY).setDisplaySize(width, height);
+    // this.sound.add(AudioKey.MAIN_SONG, { loop: true }).play();
+
+    this.sound.play(AudioKey.MAIN_SONG, { loop: true });
 
     this.platforms = MainScene.addPlatforms(this, halfWidth, bottom);
     this.tapes = MainScene.addTapes(this);
@@ -90,9 +94,9 @@ export default class MainScene extends Phaser.Scene {
     const tapes: Tape[] = [];
 
     [
-      { x: 400, y: 550, color: Color.WHITE },
+      { x: 400, y: 550, color: Color.RED },
       { x: 50, y: 210, color: Color.BLUE },
-      { x: 750, y: 190, color: Color.RED },
+      { x: 750, y: 190, color: Color.WHITE },
     ].forEach(({ x, y, color }) => {
       tapes.push(new Tape(scene, x, y, color));
     });

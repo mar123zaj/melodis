@@ -8,6 +8,7 @@ enum MelodisAnimationKey {
   PULL_OUT_SWORD = 'pull out sword',
   PUT_SWORD = 'put sword',
   ATTACK_WITH_SWORD = 'attack with sword',
+  MEDITATION = 'meditation',
 }
 
 export default MelodisAnimationKey;

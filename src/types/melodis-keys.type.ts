@@ -6,4 +6,5 @@ export default interface Keys {
   space: Phaser.Input.Keyboard.Key;
   q: Phaser.Input.Keyboard.Key;
   z: Phaser.Input.Keyboard.Key;
+  i: Phaser.Input.Keyboard.Key;
 }

@@ -1,3 +1,5 @@
+import AudioKey from '../enums/audio-key.enum';
+import { Color } from '../enums/color.enum';
 import MelodisAnimationKey from '../enums/melodis-animation-key.enum';
 import SpriteSheetKey from '../enums/sprite-sheet-key.enum';
 import Keys from '../types/melodis-keys.type';
@@ -5,6 +7,8 @@ import Keys from '../types/melodis-keys.type';
 export default class Melodis {
   sprite: Phaser.Physics.Arcade.Sprite;
   isAttacking = false;
+  isMeditating = false;
+  isBerserker = false;
   attackPower = 15;
   attackDuration = 700;
 
@@ -15,13 +19,17 @@ export default class Melodis {
   private speed = 300;
   private jumpSpeed = 320;
   private isPreparedToFight = false;
-  private intervalKeyPress = 250;
+  private intervalKeyPress = 650;
   private keyPressLockedUntil = 0;
   private attackUntil = 0;
   private jumpUntil = 0;
   private jumpDuration = 700;
   private jumpsCounter = 0;
   private maxJumpsNumber = 2;
+  private tapes: {
+    image: string;
+    color: Color;
+  }[] = [{ image: 'red_icon_tape', color: Color.RED }];
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     this.scene = scene;
@@ -34,6 +42,7 @@ export default class Melodis {
       space: Phaser.Input.Keyboard.KeyCodes.SPACE,
       q: Phaser.Input.Keyboard.KeyCodes.Q,
       z: Phaser.Input.Keyboard.KeyCodes.Z,
+      i: Phaser.Input.Keyboard.KeyCodes.I,
     }) as Keys;
 
     this.sprite = scene.physics.add.sprite(x, y, SpriteSheetKey.MELODIS);
@@ -79,34 +88,37 @@ export default class Melodis {
       key: MelodisAnimationKey.JUMP,
       frames: scene.anims.generateFrameNumbers(SpriteSheetKey.MELODIS, { start: 14, end: 17 }),
       frameRate: 8,
-      repeat: -1,
     });
 
     scene.anims.create({
       key: MelodisAnimationKey.EXTEND_JUMP,
       frames: scene.anims.generateFrameNumbers(SpriteSheetKey.MELODIS, { start: 18, end: 23 }),
       frameRate: 5,
-      repeat: -1,
     });
 
     scene.anims.create({
       key: MelodisAnimationKey.PULL_OUT_SWORD,
       frames: scene.anims.generateFrameNumbers(SpriteSheetKey.MELODIS, { start: 69, end: 73 }),
       frameRate: 8,
-      repeat: -1,
     });
 
     scene.anims.create({
       key: MelodisAnimationKey.PUT_SWORD,
-      frames: scene.anims.generateFrameNumbers(SpriteSheetKey.MELODIS, { start: 69, end: 73 }),
+      frames: scene.anims.generateFrameNumbers(SpriteSheetKey.MELODIS, { start: 74, end: 76 }),
       frameRate: 8,
-      repeat: -1,
     });
 
     scene.anims.create({
       key: MelodisAnimationKey.ATTACK_WITH_SWORD,
       frames: scene.anims.generateFrameNumbers(SpriteSheetKey.MELODIS, { start: 42, end: 46 }),
       frameRate: 8,
+      repeat: -1,
+    });
+
+    scene.anims.create({
+      key: MelodisAnimationKey.MEDITATION,
+      frames: scene.anims.generateFrameNumbers(SpriteSheetKey.MELODIS_MEDITATION, { start: 0, end: 3 }),
+      frameRate: 5,
       repeat: -1,
     });
   }
@@ -159,6 +171,33 @@ export default class Melodis {
     this.scene.cameras.main.flash(50, 100, 0, 0);
   }
 
+  setStatsToDefault(): void {}
+
+  playTape(color: Color): void {
+    if (color === Color.RED) {
+      this.scene.cameras.main.setZoom(3);
+      this.scene.cameras.main.shake(150, 0.001);
+      this.speed *= 2;
+      this.attackPower *= 2;
+      if (!this.isPreparedToFight) {
+        this.sprite.anims.play(MelodisAnimationKey.PULL_OUT_SWORD);
+        this.isPreparedToFight = true;
+      }
+      const song = this.scene.sound.add(AudioKey.MOCK_SONG);
+      song.play();
+      song.on('complete', () => this.scene.sound.play(AudioKey.MAIN_SONG, { loop: true }));
+      this.isBerserker = true;
+      return;
+      // } else if (color === Color.WHITE) {
+    } else if (color === Color.GREEN) {
+      console.log({ color });
+      this.isMeditating = true;
+      this.sprite.anims.play(MelodisAnimationKey.MEDITATION, true);
+
+      return;
+    }
+  }
+
   update(time: number): void {
     let animationKey: MelodisAnimationKey;
 
@@ -168,7 +207,14 @@ export default class Melodis {
       right = this.keys.right.isDown,
       space = this.keys.space.isDown,
       q = this.keys.q.isDown,
-      z = this.keys.z.isDown;
+      z = this.keys.z.isDown,
+      i = this.keys.i.isDown;
+
+    if (this.isMeditating) return;
+
+    if (this.isBerserker) {
+      this.scene.cameras.main.shake(150, 0.001);
+    }
 
     if (time < this.keyPressLockedUntil || time < this.attackUntil) return;
 
@@ -226,9 +272,9 @@ export default class Melodis {
     }
 
     if (q) {
-      this.isPreparedToFight = !this.isPreparedToFight;
-
       animationKey = this.isPreparedToFight ? MelodisAnimationKey.PUT_SWORD : MelodisAnimationKey.PULL_OUT_SWORD;
+
+      this.isPreparedToFight = !this.isPreparedToFight;
       this.keyPressLockedUntil = time + this.intervalKeyPress;
       this.stopMoving();
     }
@@ -246,6 +292,14 @@ export default class Melodis {
         return;
       }
     }
+
+    if (i) {
+      this.scene.sound.pauseAll();
+      this.playTape(Color.RED);
+      this.keyPressLockedUntil = time + this.intervalKeyPress;
+      return;
+    }
+
     this.updateHitBox();
     this.isAttacking = false;
     this.sprite.play(animationKey, true);
