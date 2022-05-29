@@ -1,5 +1,4 @@
-import AudioKey from '../enums/audio-key.enum';
-import { Color } from '../enums/color.enum';
+import { TapeColor } from '../enums/color.enum';
 import MelodisAnimationKey from '../enums/melodis-animation-key.enum';
 import SpriteSheetKey from '../enums/sprite-sheet-key.enum';
 import MelodisKeys from '../types/melodis-keys.type';
@@ -15,9 +14,12 @@ export default class Melodis {
   private keys: MelodisKeys;
   private scene: Phaser.Scene;
 
+  private defaultAttackPower = 15;
   private hp = 100;
+  private defaultSpeed = 300;
   private speed = 300;
   private jumpSpeed = 320;
+  private defaultJumpSpeed = 320;
   private isPreparedToFight = false;
   private intervalKeyPress = 650;
   private keyPressLockedUntil = 0;
@@ -26,10 +28,6 @@ export default class Melodis {
   private jumpDuration = 700;
   private jumpsCounter = 0;
   private maxJumpsNumber = 2;
-  private tapes: {
-    image: string;
-    color: Color;
-  }[] = [{ image: 'red_icon_tape', color: Color.green }];
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     this.scene = scene;
@@ -172,8 +170,8 @@ export default class Melodis {
 
   setStatsToDefault(): void {}
 
-  playTape(color: Color): void {
-    if (color === Color.red) {
+  turnOnSongEffects(tapeColor: TapeColor): void {
+    if (tapeColor === TapeColor.red) {
       this.scene.cameras.main.setZoom(3);
       this.scene.cameras.main.shake(150, 0.001);
       this.speed *= 2;
@@ -182,19 +180,25 @@ export default class Melodis {
         this.sprite.anims.play(MelodisAnimationKey.PULL_OUT_SWORD);
         this.isPreparedToFight = true;
       }
-      const song = this.scene.sound.add(AudioKey.FIGHT_SONG);
-      song.play();
-      song.on('complete', () => this.scene.sound.play(AudioKey.MAIN_SONG, { loop: true }));
+
       this.isBerserker = true;
       return;
       // } else if (color === Color.WHITE) {
-    } else if (color === Color.green) {
-      console.log({ color });
+    } else if (tapeColor === TapeColor.green) {
       this.isMeditating = true;
       this.sprite.anims.play(MelodisAnimationKey.MEDITATION, true);
 
       return;
     }
+  }
+
+  turnOffSongEffects(): void {
+    this.scene.cameras.main.setZoom(1.5);
+    this.isBerserker = false;
+    this.isMeditating = false;
+    this.speed = this.defaultSpeed;
+    this.jumpSpeed = this.defaultJumpSpeed;
+    this.attackPower = this.defaultAttackPower;
   }
 
   update(time: number): void {

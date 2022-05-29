@@ -1,6 +1,8 @@
-enum Events {
+enum Event {
   ACTIVATE_TAPE_SELECTION = 'ACTIVATE_TAPE_SELECTION',
   DEACTIVATE_TAPE_SELECTION = 'DEACTIVATE_TAPE_SELECTION',
+  TAPE_COLLECTED = 'TAPE_COLLECTED',
+  RUN_TAPE = 'RUN_TAPE',
 }
 
-export default Events;
+export default Event;

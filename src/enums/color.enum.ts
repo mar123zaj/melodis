@@ -1,4 +1,4 @@
-export enum Color {
+export enum TapeColor {
   black = 'black',
   white = 'white',
   green = 'green',

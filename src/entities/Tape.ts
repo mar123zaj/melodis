@@ -1,19 +1,23 @@
-import { Color } from '../enums/color.enum';
+import { TapeColor } from '../enums/color.enum';
 import ImageKey from '../enums/image-key.enum';
 import MoveDirection from '../enums/move-direction.enum';
 
 export class Tape {
   sprite: Phaser.Physics.Arcade.Sprite;
+  color: TapeColor;
+
   private scene: Phaser.Scene;
   private nextActionInterval = 2000;
   private nextAction = 0;
   private currentMoveDirection = MoveDirection.DOWN;
   private speed = 3;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, color: Color) {
+  constructor(scene: Phaser.Scene, x: number, y: number, color: TapeColor) {
     this.scene = scene;
 
+    this.color = color;
     const spriteKey = `${color}_${ImageKey.ICON_TAPE}`;
+
     this.sprite = scene.physics.add.sprite(x, y, spriteKey);
 
     this.sprite.body.bounce.y = 0.8;

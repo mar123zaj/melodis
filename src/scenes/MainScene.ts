@@ -3,10 +3,11 @@ import Melodis from '../entities/Melodis';
 import { Tape } from '../entities/Tape';
 import { Wolf } from '../entities/Wolf';
 import AudioKey from '../enums/audio-key.enum';
-import { Color } from '../enums/color.enum';
+import { TapeColor } from '../enums/color.enum';
 import ImageKey from '../enums/image-key.enum';
-import Events from '../events/events.enum';
+import Event from '../events/event.enum';
 import eventsCenter from '../events/EventsCenter';
+import PhaserEvent from '../events/phaser-event.enum';
 import MainSceneKeys from '../types/main-keys.type';
 import TapeSelectionScene from './TapeSelectionScene';
 
@@ -21,6 +22,8 @@ export default class MainScene extends Phaser.Scene {
   private intervalKeyPress = 650;
   private keyPressLockedUntil = 0;
   private tapeSelectionActivated = false;
+  private defaultSong: Phaser.Sound.BaseSound;
+  private tapeSong: Phaser.Sound.BaseSound;
 
   constructor() {
     super('MainScene');
@@ -41,9 +44,9 @@ export default class MainScene extends Phaser.Scene {
     Wolf.loadAnims(this);
 
     this.add.image(halfWidth, halfHeight, ImageKey.SKY).setDisplaySize(width, height);
-    // this.sound.add(AudioKey.MAIN_SONG, { loop: true }).play();
+    this.defaultSong = this.sound.add(AudioKey.MAIN_SONG, { loop: true });
 
-    this.sound.play(AudioKey.MAIN_SONG, { loop: true });
+    this.defaultSong.play();
 
     this.platforms = MainScene.addPlatforms(this, halfWidth, bottom);
     this.tapes = MainScene.addTapes(this);
@@ -56,13 +59,60 @@ export default class MainScene extends Phaser.Scene {
 
     this.tapes.forEach((tape) => {
       this.physics.add.collider(this.platforms, tape.sprite);
-      this.physics.add.overlap(this.melodis.sprite, tape.sprite, this.collectTape, null, 4);
+      this.physics.add.overlap(this.melodis.sprite, tape.sprite, this.collectTape, null, this);
     });
 
     this.physics.add.collider(this.platforms, this.wolfsGroup);
     this.physics.add.overlap(this.melodis.sprite, this.wolfsGroup, this.melodisWolfCollide, undefined, this);
 
     this.scene.run(TapeSelectionScene.name);
+
+    eventsCenter.on(Event.RUN_TAPE, this.runTape, this);
+  }
+
+  runTape(tapeColor: TapeColor): void {
+    this.tapeSelectionActivated = false;
+    this.melodis.sprite.enableBody(false, this.melodis.sprite.x, this.melodis.sprite.y, true, true);
+
+    this.defaultSong.pause();
+    if (this.tapeSong && this.tapeSong.isPlaying) {
+      this.tapeSong.destroy();
+      this.melodis.turnOffSongEffects();
+    }
+
+    this.melodis.turnOnSongEffects(tapeColor);
+
+    let audioKey: AudioKey;
+
+    switch (tapeColor) {
+      case TapeColor.red:
+        audioKey = AudioKey.MOCK_SONG;
+        break;
+      case TapeColor.green:
+        audioKey = AudioKey.MOCK_SONG;
+        break;
+      case TapeColor.white:
+        audioKey = AudioKey.MOCK_SONG;
+        break;
+      case TapeColor.blue:
+        audioKey = AudioKey.MOCK_SONG;
+        break;
+      case TapeColor.yellow:
+        audioKey = AudioKey.MOCK_SONG;
+        break;
+      case TapeColor.black:
+        audioKey = AudioKey.MOCK_SONG;
+        break;
+    }
+
+    this.tapeSong = this.sound.add(audioKey);
+    this.tapeSong.on(PhaserEvent.COMPLETE, this.backToDefaultSong, this);
+    this.tapeSong.play();
+  }
+
+  backToDefaultSong(): void {
+    this.defaultSong.resume();
+    this.melodis.turnOffSongEffects();
   }
 
   melodisWolfCollide(_: Phaser.GameObjects.GameObject, wolfSprite: Phaser.GameObjects.GameObject): void {
@@ -89,10 +139,13 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
-  collectTape(_: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, tape: Phaser.Physics.Arcade.Image): void {
-    tape.disableBody(true, true);
-  }
+  collectTape(_: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, tapeSprite: Phaser.Physics.Arcade.Image): void {
+    const tape = this.tapes.find((t) => t.sprite === tapeSprite);
 
+    tapeSprite.disableBody(true, true);
+    eventsCenter.emit(Event.TAPE_COLLECTED, tape.color);
+  }
+  //this.scene.sound.pauseAll();
   static addPlatforms(scene: Phaser.Scene, x: number, y: number): Phaser.Physics.Arcade.StaticGroup {
     const platforms = scene.physics.add.staticGroup();
 
@@ -109,9 +162,9 @@ export default class MainScene extends Phaser.Scene {
     const tapes: Tape[] = [];
 
     [
-      { x: 400, y: 550, color: Color.red },
-      { x: 50, y: 210, color: Color.blue },
-      { x: 750, y: 190, color: Color.white },
+      { x: 400, y: 550, color: TapeColor.red },
+      { x: 50, y: 210, color: TapeColor.blue },
+      { x: 750, y: 190, color: TapeColor.white },
     ].forEach(({ x, y, color }) => {
       tapes.push(new Tape(scene, x, y, color));
     });
@@ -151,13 +204,13 @@ export default class MainScene extends Phaser.Scene {
 
     if (t) {
       if (this.tapeSelectionActivated) {
-        eventsCenter.emit(Events.DEACTIVATE_TAPE_SELECTION);
+        eventsCenter.emit(Event.DEACTIVATE_TAPE_SELECTION);
 
         this.tapeSelectionActivated = false;
 
         this.melodis.sprite.enableBody(false, this.melodis.sprite.x, this.melodis.sprite.y, true, true);
       } else {
-        eventsCenter.emit(Events.ACTIVATE_TAPE_SELECTION);
+        eventsCenter.emit(Event.ACTIVATE_TAPE_SELECTION);
 
         this.tapeSelectionActivated = true;
 

@@ -1,13 +1,20 @@
-import { Color } from '../enums/color.enum';
+import { TapeColor } from '../enums/color.enum';
 import ImageKey from '../enums/image-key.enum';
-import Events from '../events/events.enum';
+import Event from '../events/event.enum';
 import eventsCenter from '../events/EventsCenter';
 import TapeSelectionKeys from '../types/tape-selection-keys.type';
 
 export default class TapeSelectionScene extends Phaser.Scene {
   isActive = false;
 
-  private tapesColors = [Color.black, Color.yellow, Color.black, Color.black, Color.black];
+  private tapesColorsCollected = [
+    TapeColor.yellow,
+    TapeColor.blue,
+    TapeColor.red,
+    TapeColor.green,
+    TapeColor.white,
+    TapeColor.black,
+  ];
   private keys: TapeSelectionKeys;
   private container: Phaser.GameObjects.Container;
   private intervalKeyPress = 650;
@@ -31,16 +38,15 @@ export default class TapeSelectionScene extends Phaser.Scene {
     const tapesImages: Phaser.GameObjects.Image[] = [];
     const tapesContainers: Phaser.GameObjects.Container[] = [];
     let y = 0;
-    for (const color in Color) {
-      console.log({ color });
 
-      const countAmount = this.tapesColors.filter((tapeColor) => tapeColor === color).length;
+    for (const color in TapeColor) {
+      const collectedTapeColorAmount = this.countCollectedTapesByColor(color as TapeColor);
 
       const tapeIconImage = this.add.image(0, 0, `${color}_${ImageKey.ICON_TAPE}`).setAlpha(0.5);
       const tapeColorAmountText = this.add.dynamicBitmapText(20, 0, 'default', 'x0', 8).setAlpha(0.5);
 
-      if (countAmount) {
-        tapeColorAmountText.setText(`x${countAmount}`);
+      if (collectedTapeColorAmount) {
+        tapeColorAmountText.setText(`x${collectedTapeColorAmount}`);
       }
 
       tapesImages.push(tapeIconImage);
@@ -52,10 +58,48 @@ export default class TapeSelectionScene extends Phaser.Scene {
     }
 
     this.tapesContainers = tapesContainers;
-    this.container = this.add.container(75, height - 50, tapesContainers);
+    this.container = this.add.container(25, height - 45, tapesContainers);
 
-    eventsCenter.on(Events.ACTIVATE_TAPE_SELECTION, this.activate, this);
-    eventsCenter.on(Events.DEACTIVATE_TAPE_SELECTION, this.deactivate, this);
+    eventsCenter.on(Event.ACTIVATE_TAPE_SELECTION, this.activate, this);
+    eventsCenter.on(Event.DEACTIVATE_TAPE_SELECTION, this.deactivate, this);
+    eventsCenter.on(Event.TAPE_COLLECTED, this.tapeCollected, this);
+  }
+
+  private countCollectedTapesByColor(tapeColor: TapeColor): number {
+    return this.tapesColorsCollected.filter((collectedTapeColor) => collectedTapeColor === tapeColor).length;
+  }
+
+  tapeCollected(tapeColor: TapeColor): void {
+    this.tapesColorsCollected.push(tapeColor);
+    const tapeContainerIndex = this.getTapeContainerIndexByColor(tapeColor);
+    const tapeContainer = this.tapesContainers[tapeContainerIndex];
+
+    const tapeContainerText = tapeContainer.getAt(1) as Phaser.GameObjects.DynamicBitmapText;
+    const collectedTapeColorAmount = this.countCollectedTapesByColor(tapeColor);
+
+    tapeContainerText.setText(`x${collectedTapeColorAmount}`);
+  }
+
+  private getTapeContainerIndexByColor(tapeColor: TapeColor): number {
+    let tapeContainerIndex = 0;
+    for (const color in TapeColor) {
+      if (tapeColor === color) {
+        return tapeContainerIndex;
+      }
+
+      tapeContainerIndex++;
+    }
+  }
+
+  private getTapeContainerColorByIndex(index: number): TapeColor {
+    let loopIndex = 0;
+    for (const color in TapeColor) {
+      if (index === loopIndex) {
+        return color as TapeColor;
+      }
+
+      loopIndex++;
+    }
   }
 
   activate(): void {
@@ -129,8 +173,25 @@ export default class TapeSelectionScene extends Phaser.Scene {
 
       this.selectedTapeContainerIndex = newSelectedTapeContainerIndex;
     } else if (enter) {
+      const tapeColor = this.getTapeContainerColorByIndex(this.selectedTapeContainerIndex);
+      const tapesColorAmount = this.countCollectedTapesByColor(tapeColor);
+
+      if (tapesColorAmount <= 0) return;
       const selectedContainer = this.tapesContainers[this.selectedTapeContainerIndex];
-      console.log({ selectedContainer });
+
+      const tapeContainerText = selectedContainer.getAt(1) as Phaser.GameObjects.DynamicBitmapText;
+      const collectedTapeColorAmount = this.countCollectedTapesByColor(tapeColor);
+
+      const newCollectedTapeColorAmount = collectedTapeColorAmount - 1;
+
+      const tapeColorIndex = this.tapesColorsCollected.findIndex(
+        (tapeColorCollected) => tapeColorCollected === tapeColor,
+      );
+      this.tapesColorsCollected.splice(tapeColorIndex, 1);
+
+      tapeContainerText.setText(`x${newCollectedTapeColorAmount}`);
+      this.deactivate();
+      eventsCenter.emit(Event.RUN_TAPE, tapeColor);
     }
   }
 }
