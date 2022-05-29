@@ -1,8 +1,8 @@
 export enum Color {
-  BLACK = 'black',
-  WHITE = 'white',
-  GREEN = 'green',
-  RED = 'red',
-  BLUE = 'blue',
-  YELLOW = 'yellow',
+  black = 'black',
+  white = 'white',
+  green = 'green',
+  red = 'red',
+  blue = 'blue',
+  yellow = 'yellow',
 }

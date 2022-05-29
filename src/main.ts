@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import MainScene from './scenes/MainScene';
 import PreloaderScene from './scenes/PreloaderScene';
+import TapeSelectionScene from './scenes/TapeSelectionScene';
 
 export default new Phaser.Game({
   type: Phaser.AUTO,
@@ -13,5 +14,5 @@ export default new Phaser.Game({
       // debug: true,
     },
   },
-  scene: [PreloaderScene, MainScene],
+  scene: [PreloaderScene, MainScene, TapeSelectionScene],
 });

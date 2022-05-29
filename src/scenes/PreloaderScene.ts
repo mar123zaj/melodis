@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
+import FightSong from '../../public/assets/audio/fight_song.mp3';
 import MainSong from '../../public/assets/audio/main_song.mp3';
 import MockSong from '../../public/assets/audio/mock_song.mp3';
-import FightSong from '../../public/assets/audio/fight_song.mp3';
+import CasualEncounterFNT from '../../public/assets/fonts/annaanthropy/CasualEncounter.fnt';
+import CasualEncounterPNG from '../../public/assets/fonts/annaanthropy/CasualEncounter.png';
 import Attention from '../../public/assets/icons/emojis/attention.png';
 import BlackIconTape from '../../public/assets/icons/tapes/black_icon_tape.png';
 import BlueIconTape from '../../public/assets/icons/tapes/blue_icon_tape.png';
@@ -9,6 +11,7 @@ import GreenIconTape from '../../public/assets/icons/tapes/green_icon_tape.png';
 import RedIconTape from '../../public/assets/icons/tapes/red_icon_tape.png';
 import WhiteIconTape from '../../public/assets/icons/tapes/white_icon_tape.png';
 import YellowIconTape from '../../public/assets/icons/tapes/yellow_icon_tape.png';
+import TapeIndicationFrame from '../../public/assets/icons/tapes/tape_indication_frame.png';
 import Melodis from '../../public/assets/sprites/melodis.png';
 import MelodisMeditation from '../../public/assets/sprites/melodis_meditation.png';
 import WolfAttack from '../../public/assets/sprites/wolf/wolf_attack.png';
@@ -33,13 +36,14 @@ export default class PreloaderScene extends Phaser.Scene {
     this.load.image(ImageKey.SKY, Sky);
     this.load.image(ImageKey.GROUND, Ground);
     this.load.image(ImageKey.PLATFORM, Platform);
-    this.load.image(`${Color.BLACK}_${ImageKey.ICON_TAPE}`, BlackIconTape);
-    this.load.image(`${Color.BLUE}_${ImageKey.ICON_TAPE}`, BlueIconTape);
-    this.load.image(`${Color.GREEN}_${ImageKey.ICON_TAPE}`, GreenIconTape);
-    this.load.image(`${Color.RED}_${ImageKey.ICON_TAPE}`, RedIconTape);
-    this.load.image(`${Color.WHITE}_${ImageKey.ICON_TAPE}`, WhiteIconTape);
-    this.load.image(`${Color.YELLOW}_${ImageKey.ICON_TAPE}`, YellowIconTape);
+    this.load.image(`${Color.black}_${ImageKey.ICON_TAPE}`, BlackIconTape);
+    this.load.image(`${Color.blue}_${ImageKey.ICON_TAPE}`, BlueIconTape);
+    this.load.image(`${Color.green}_${ImageKey.ICON_TAPE}`, GreenIconTape);
+    this.load.image(`${Color.red}_${ImageKey.ICON_TAPE}`, RedIconTape);
+    this.load.image(`${Color.white}_${ImageKey.ICON_TAPE}`, WhiteIconTape);
+    this.load.image(`${Color.yellow}_${ImageKey.ICON_TAPE}`, YellowIconTape);
     this.load.image(ImageKey.ATTENTION, Attention);
+    this.load.image(ImageKey.TAPE_INDICATION_FRAME, TapeIndicationFrame);
 
     this.load.spritesheet(SpriteSheetKey.MELODIS, Melodis, { frameWidth: 50, frameHeight: 37 });
     this.load.spritesheet(SpriteSheetKey.MELODIS_MEDITATION, MelodisMeditation, { frameWidth: 50, frameHeight: 37 });
@@ -51,6 +55,8 @@ export default class PreloaderScene extends Phaser.Scene {
     this.load.audio(AudioKey.FIGHT_SONG, FightSong);
     this.load.audio(AudioKey.MAIN_SONG, MainSong);
     this.load.audio(AudioKey.MOCK_SONG, MockSong);
+
+    this.load.bitmapFont('default', CasualEncounterPNG, CasualEncounterFNT);
   }
 
   create(): void {

@@ -5,6 +5,10 @@ import { Wolf } from '../entities/Wolf';
 import AudioKey from '../enums/audio-key.enum';
 import { Color } from '../enums/color.enum';
 import ImageKey from '../enums/image-key.enum';
+import Events from '../events/events.enum';
+import eventsCenter from '../events/EventsCenter';
+import MainSceneKeys from '../types/main-keys.type';
+import TapeSelectionScene from './TapeSelectionScene';
 
 export default class MainScene extends Phaser.Scene {
   private platforms: Phaser.Physics.Arcade.StaticGroup;
@@ -13,12 +17,21 @@ export default class MainScene extends Phaser.Scene {
   private wolfs: Wolf[];
   private wolfsGroup: Phaser.GameObjects.Group;
   private attackLockedUntil = 0;
+  private keys: MainSceneKeys;
+  private intervalKeyPress = 650;
+  private keyPressLockedUntil = 0;
+  private tapeSelectionActivated = false;
 
   constructor() {
     super('MainScene');
   }
 
   create(): void {
+    this.keys = this.input.keyboard.addKeys({
+      t: Phaser.Input.Keyboard.KeyCodes.T,
+      i: Phaser.Input.Keyboard.KeyCodes.I,
+    }) as MainSceneKeys;
+
     const { width, height } = this.game.renderer;
     const halfWidth = width / 2,
       halfHeight = height / 2;
@@ -48,6 +61,8 @@ export default class MainScene extends Phaser.Scene {
 
     this.physics.add.collider(this.platforms, this.wolfsGroup);
     this.physics.add.overlap(this.melodis.sprite, this.wolfsGroup, this.melodisWolfCollide, undefined, this);
+
+    this.scene.run(TapeSelectionScene.name);
   }
 
   melodisWolfCollide(_: Phaser.GameObjects.GameObject, wolfSprite: Phaser.GameObjects.GameObject): void {
@@ -94,9 +109,9 @@ export default class MainScene extends Phaser.Scene {
     const tapes: Tape[] = [];
 
     [
-      { x: 400, y: 550, color: Color.RED },
-      { x: 50, y: 210, color: Color.BLUE },
-      { x: 750, y: 190, color: Color.WHITE },
+      { x: 400, y: 550, color: Color.red },
+      { x: 50, y: 210, color: Color.blue },
+      { x: 750, y: 190, color: Color.white },
     ].forEach(({ x, y, color }) => {
       tapes.push(new Tape(scene, x, y, color));
     });
@@ -124,5 +139,30 @@ export default class MainScene extends Phaser.Scene {
 
     this.tapes.forEach((tape) => tape.update(time));
     this.wolfs.forEach((wolf) => wolf.update(time, { x, y }));
+
+    if (time < this.keyPressLockedUntil) return;
+
+    const t = this.keys.t.isDown,
+      i = this.keys.i.isDown;
+
+    if (t || i) {
+      this.keyPressLockedUntil = time + this.intervalKeyPress;
+    }
+
+    if (t) {
+      if (this.tapeSelectionActivated) {
+        eventsCenter.emit(Events.DEACTIVATE_TAPE_SELECTION);
+
+        this.tapeSelectionActivated = false;
+
+        this.melodis.sprite.enableBody(false, this.melodis.sprite.x, this.melodis.sprite.y, true, true);
+      } else {
+        eventsCenter.emit(Events.ACTIVATE_TAPE_SELECTION);
+
+        this.tapeSelectionActivated = true;
+
+        this.melodis.sprite.disableBody();
+      }
+    }
   }
 }

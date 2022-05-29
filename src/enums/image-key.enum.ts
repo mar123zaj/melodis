@@ -4,7 +4,7 @@ enum ImageKey {
   PLATFORM = 'platform',
   ICON_TAPE = 'icon_tape',
   ATTENTION = 'attention',
-  CARD = 'card',
+  TAPE_INDICATION_FRAME = 'tape_indication_frame',
 }
 
 export default ImageKey;

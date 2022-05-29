@@ -2,7 +2,7 @@ import AudioKey from '../enums/audio-key.enum';
 import { Color } from '../enums/color.enum';
 import MelodisAnimationKey from '../enums/melodis-animation-key.enum';
 import SpriteSheetKey from '../enums/sprite-sheet-key.enum';
-import Keys from '../types/melodis-keys.type';
+import MelodisKeys from '../types/melodis-keys.type';
 
 export default class Melodis {
   sprite: Phaser.Physics.Arcade.Sprite;
@@ -12,7 +12,7 @@ export default class Melodis {
   attackPower = 15;
   attackDuration = 700;
 
-  private keys: Keys;
+  private keys: MelodisKeys;
   private scene: Phaser.Scene;
 
   private hp = 100;
@@ -29,7 +29,7 @@ export default class Melodis {
   private tapes: {
     image: string;
     color: Color;
-  }[] = [{ image: 'red_icon_tape', color: Color.RED }];
+  }[] = [{ image: 'red_icon_tape', color: Color.green }];
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     this.scene = scene;
@@ -42,8 +42,7 @@ export default class Melodis {
       space: Phaser.Input.Keyboard.KeyCodes.SPACE,
       q: Phaser.Input.Keyboard.KeyCodes.Q,
       z: Phaser.Input.Keyboard.KeyCodes.Z,
-      i: Phaser.Input.Keyboard.KeyCodes.I,
-    }) as Keys;
+    }) as MelodisKeys;
 
     this.sprite = scene.physics.add.sprite(x, y, SpriteSheetKey.MELODIS);
     scene.cameras.main.setRoundPixels(true);
@@ -118,7 +117,7 @@ export default class Melodis {
     scene.anims.create({
       key: MelodisAnimationKey.MEDITATION,
       frames: scene.anims.generateFrameNumbers(SpriteSheetKey.MELODIS_MEDITATION, { start: 0, end: 3 }),
-      frameRate: 5,
+      frameRate: 3,
       repeat: -1,
     });
   }
@@ -174,7 +173,7 @@ export default class Melodis {
   setStatsToDefault(): void {}
 
   playTape(color: Color): void {
-    if (color === Color.RED) {
+    if (color === Color.red) {
       this.scene.cameras.main.setZoom(3);
       this.scene.cameras.main.shake(150, 0.001);
       this.speed *= 2;
@@ -183,13 +182,13 @@ export default class Melodis {
         this.sprite.anims.play(MelodisAnimationKey.PULL_OUT_SWORD);
         this.isPreparedToFight = true;
       }
-      const song = this.scene.sound.add(AudioKey.MOCK_SONG);
+      const song = this.scene.sound.add(AudioKey.FIGHT_SONG);
       song.play();
       song.on('complete', () => this.scene.sound.play(AudioKey.MAIN_SONG, { loop: true }));
       this.isBerserker = true;
       return;
       // } else if (color === Color.WHITE) {
-    } else if (color === Color.GREEN) {
+    } else if (color === Color.green) {
       console.log({ color });
       this.isMeditating = true;
       this.sprite.anims.play(MelodisAnimationKey.MEDITATION, true);
@@ -207,8 +206,7 @@ export default class Melodis {
       right = this.keys.right.isDown,
       space = this.keys.space.isDown,
       q = this.keys.q.isDown,
-      z = this.keys.z.isDown,
-      i = this.keys.i.isDown;
+      z = this.keys.z.isDown;
 
     if (this.isMeditating) return;
 
@@ -216,7 +214,7 @@ export default class Melodis {
       this.scene.cameras.main.shake(150, 0.001);
     }
 
-    if (time < this.keyPressLockedUntil || time < this.attackUntil) return;
+    if (time < this.keyPressLockedUntil || time < this.attackUntil || !this.sprite.body.enable) return;
 
     if (time < this.jumpUntil) {
       if (z && this.jumpsCounter < this.maxJumpsNumber) {
@@ -293,12 +291,12 @@ export default class Melodis {
       }
     }
 
-    if (i) {
-      this.scene.sound.pauseAll();
-      this.playTape(Color.RED);
-      this.keyPressLockedUntil = time + this.intervalKeyPress;
-      return;
-    }
+    // if (i) {
+    //   this.scene.sound.pauseAll();
+    //   this.playTape(Color.green);
+    //   this.keyPressLockedUntil = time + this.intervalKeyPress;
+    //   return;
+    // }
 
     this.updateHitBox();
     this.isAttacking = false;
